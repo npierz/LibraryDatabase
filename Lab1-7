@@ -1,0 +1,1206 @@
+CLEAR SCREEN;
+SET LINESIZE 230;
+set serveroutput on;
+alter session set nls_date_format = 'YYYYMMDD';
+
+----------------------------------------;
+--              Drop table;
+----------------------------------------;
+
+drop table GRAFIK;
+--
+drop table SLOTY;
+--
+drop table PRACOWNICY;
+--
+drop table EEE_WYD_UZY;
+--
+drop table KONTA_BIBL;
+--
+drop table WYDARZENIA;
+--
+drop table HISTORIA_WYP;
+--
+drop table KARY;
+--
+drop table WYPOZYCZENIA;
+--
+drop table REZERWACJE;
+--
+drop table UZYTKOWNICY;
+--
+drop table EGZEMPLARZE;
+--
+drop table KKK_AUT_KSI;
+--
+drop table KSIAZKI;
+--
+drop table AUTORZY;
+--
+
+----------------------------------------;
+--CREATE TABLE AUTORZY;
+----------------------------------------;
+
+create table AUTORZY (
+AUT_ID_Autorzy number(4) NOT NULL,
+AUT_Imie varchar2(20) NOT NULL,
+AUT_Nazwisko varchar2(20) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table AUTORZY
+add constraint CSR_PK_AUT
+primary key (AUT_ID_Autorzy);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_AUTORZY;
+--
+create sequence SEQ_AUTORZY  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_AUTORZY
+before insert on AUTORZY
+for each row
+begin
+if :new.AUT_ID_Autorzy is NULL then
+SELECT SEQ_AUTORZY.nextval INTO :new.AUT_ID_Autorzy FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--CREATE TABLE KSIAZKI;
+----------------------------------------;
+
+create table KSIAZKI (
+KSI_ID_Ksiazki number(4) NOT NULL,
+KSI_Tytul varchar2(40) NOT NULL,
+KSI_Gatunek varchar2(15)
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table KSIAZKI
+add constraint CSR_PK_KSI
+primary key (KSI_ID_Ksiazki);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_KSIAZKI;
+--
+create sequence SEQ_KSIAZKI  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_KSIAZKI
+before insert on KSIAZKI
+for each row
+begin
+if :new.KSI_ID_Ksiazki is NULL then
+SELECT SEQ_KSIAZKI.nextval INTO :new.KSI_ID_Ksiazki FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--CREATE TABLE KKK_AUT_KSI;
+----------------------------------------;
+
+create table KKK_AUT_KSI (
+KKK_ID number(4) NOT NULL,
+AUT_ID_Autorzy number(4) NOT NULL,
+KSI_ID_Ksiazki number(4) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table KKK_AUT_KSI
+add constraint CSR_PK_KKK
+primary key (KKK_ID);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+alter table KKK_AUT_KSI add constraint CSR_FK_AUT
+foreign key (AUT_ID_Autorzy)
+references AUTORZY (AUT_ID_Autorzy);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+alter table KKK_AUT_KSI add constraint CSR_FK_KSI
+foreign key (KSI_ID_Ksiazki)
+references KSIAZKI (KSI_ID_Ksiazki);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_KKK_AUT_KSI;
+--
+create sequence SEQ_KKK_AUT_KSI  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_KKK_AUT_KSI
+before insert on KKK_AUT_KSI
+for each row
+begin
+if :new.KKK_ID is NULL then
+SELECT SEQ_KKK_AUT_KSI.nextval INTO :new.KKK_ID FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--CREATE TABLE EGZEMPLARZE;
+----------------------------------------;
+
+create table EGZEMPLARZE (
+EGZ_ID_Egzemplarza number(4) NOT NULL,
+EGZ_Rok_wydania number(4) ,
+EGZ_Ilosc_stron number(6) ,
+EGZ_Numer_wydania number(3) ,
+EGZ_Oprawa varchar2(15) ,
+KSI_ID_Ksiazki number(4) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table EGZEMPLARZE
+add constraint CSR_PK_EGZ
+primary key (EGZ_ID_Egzemplarza);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+--alter table EGZEMPLARZE add constraint CSR_FK_KSI
+alter table EGZEMPLARZE add constraint CSR_FK_KSI1
+foreign key (KSI_ID_Ksiazki)
+references KSIAZKI (KSI_ID_Ksiazki);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_EGZEMPLARZE;
+--
+create sequence SEQ_EGZEMPLARZE  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_EGZEMPLARZE
+before insert on EGZEMPLARZE
+for each row
+begin
+if :new.EGZ_ID_Egzemplarza is NULL then
+SELECT SEQ_EGZEMPLARZE.nextval INTO :new.EGZ_ID_Egzemplarza FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--CREATE TABLE UZYTKOWNICY;
+----------------------------------------;
+
+create table UZYTKOWNICY (
+UZY_ID_Uzytkownika number(4) NOT NULL,
+UZY_Nr_Karty number(10) NOT NULL,
+UZY_Imie varchar2(20) NOT NULL,
+UZY_Drugie_Imie varchar2(20) ,
+UZY_Nazwisko varchar2(20) NOT NULL,
+UZY_Adres varchar2(20) NOT NULL,
+UZY_Data_ur DATE,
+UZY_Poczta varchar2(40) NOT NULL,
+UZY_Aktywny varchar2(3) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table UZYTKOWNICY
+add constraint CSR_PK_UZY
+primary key (UZY_ID_Uzytkownika);
+
+----------------------------------------;
+--               Unique Key;
+----------------------------------------;
+
+alter table UZYTKOWNICY
+add constraint CSR_UQ_UZY
+unique (UZY_Nr_Karty);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_UZYTKOWNICY;
+--
+create sequence SEQ_UZYTKOWNICY  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_UZYTKOWNICY
+before insert on UZYTKOWNICY
+for each row
+begin
+if :new.UZY_ID_Uzytkownika is NULL then
+SELECT SEQ_UZYTKOWNICY.nextval INTO :new.UZY_ID_Uzytkownika FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--CREATE TABLE REZERWACJE;
+----------------------------------------;
+
+create table REZERWACJE (
+REZ_ID_Rezerwacje number(4) NOT NULL,
+REZ_Data_rezerwacji date NOT NULL,
+EGZ_ID_Egzemplarza number(4) NOT NULL,
+UZY_ID_Uzytkownika number(4) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table REZERWACJE
+add constraint CSR_PK_REZ
+primary key (REZ_ID_Rezerwacje);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+alter table REZERWACJE add constraint CSR_FK_EGZ
+foreign key (EGZ_ID_Egzemplarza)
+references EGZEMPLARZE (EGZ_ID_Egzemplarza);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+--alter table REZERWACJE add constraint CSR_FK_UZY
+alter table REZERWACJE add constraint CSR_FK_UZY1
+foreign key (UZY_ID_Uzytkownika)
+references UZYTKOWNICY (UZY_ID_Uzytkownika);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_REZERWACJE;
+--
+create sequence SEQ_REZERWACJE  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_REZERWACJE
+before insert on REZERWACJE
+for each row
+begin
+if :new.REZ_ID_Rezerwacje is NULL then
+SELECT SEQ_REZERWACJE.nextval INTO :new.REZ_ID_Rezerwacje FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--CREATE TABLE WYPOZYCZENIA;
+----------------------------------------;
+
+create table WYPOZYCZENIA (
+WYP_ID_Wypozyczenia number(4) NOT NULL,
+WYP_Data_wypozyczenia date NOT NULL,
+EGZ_ID_Egzemplarza number(4) NOT NULL,
+UZY_ID_Uzytkownika number(4) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table WYPOZYCZENIA
+add constraint CSR_PK_WYP
+primary key (WYP_ID_Wypozyczenia);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+alter table WYPOZYCZENIA add constraint CSR_FK_UZY
+foreign key (UZY_ID_Uzytkownika)
+references UZYTKOWNICY (UZY_ID_Uzytkownika);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+--alter table WYPOZYCZENIA add constraint CSR_FK_EGZ
+alter table WYPOZYCZENIA add constraint CSR_FK_EGZ1
+foreign key (EGZ_ID_Egzemplarza)
+references EGZEMPLARZE (EGZ_ID_Egzemplarza);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_WYPOZYCZENIA;
+--
+create sequence SEQ_WYPOZYCZENIA  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_WYPOZYCZENIA
+before insert on WYPOZYCZENIA
+for each row
+begin
+if :new.WYP_Data_wypozyczenia is NULL then
+SELECT SEQ_WYPOZYCZENIA.nextval INTO :new.WYP_Data_wypozyczenia FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--CREATE TABLE KARY;
+----------------------------------------;
+
+create table KARY (
+KAR_ID_Kary number(4) NOT NULL,
+KAR_Data_rozpoczecia date NOT NULL,
+KAR_Kwota number(5,2) NOT NULL,
+WYP_ID_Wypozyczenia number(4) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table KARY
+add constraint CSR_PK_KAR
+primary key (KAR_ID_Kary);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+alter table KARY add constraint CSR_FK_WYP1
+foreign key (WYP_ID_Wypozyczenia)
+references WYPOZYCZENIA (WYP_ID_Wypozyczenia);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_KARY;
+--
+create sequence SEQ_KARY  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_KARY
+before insert on KARY
+for each row
+begin
+if :new.KAR_ID_Kary is NULL then
+SELECT SEQ_KARY.nextval INTO :new.KAR_ID_Kary FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--CREATE TABLE HISTORIA_WYP;
+----------------------------------------;
+
+create table HISTORIA_WYP (
+HIS_ID_Wypozyczenia number(4) NOT NULL,
+HIS_Data_wypozyczenia date NOT NULL,
+EGZ_ID_Egzemplarza number(4) NOT NULL,
+UZY_ID_Uzytkownika number(4) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table HISTORIA_WYP
+add constraint CSR_PK_HIS
+primary key (HIS_ID_Wypozyczenia);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+--alter table HISTORIA_WYP add constraint CSR_FK_UZY
+alter table HISTORIA_WYP add constraint CSR_FK_UZY2
+foreign key (UZY_ID_Uzytkownika)
+references UZYTKOWNICY (UZY_ID_Uzytkownika);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+--alter table HISTORIA_WYP add constraint CSR_FK_EGZ
+alter table HISTORIA_WYP add constraint CSR_FK_EGZ2
+foreign key (EGZ_ID_Egzemplarza)
+references EGZEMPLARZE (EGZ_ID_Egzemplarza);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_HISTORIA;
+--
+create sequence SEQ_HISTORIA  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+---              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_HISTORIA_WYP
+after delete on WYPOZYCZENIA
+for each row
+begin
+INSERT INTO HISTORIA_WYP(HIS_ID_Wypozyczenia, HIS_Data_wypozyczenia, EGZ_ID_Egzemplarza, UZY_ID_Uzytkownika)
+VALUES (:old.WYP_ID_Wypozyczenia, :old.WYP_Data_wypozyczenia, :old.EGZ_ID_Egzemplarza, :old.UZY_ID_Uzytkownika);
+end;
+/
+
+
+----------------------------------------;
+--CREATE TABLE KONTA_BIBL;
+----------------------------------------;
+
+create table KONTA_BIBL (
+KON_ID_Konta number(4) NOT NULL,
+KON_Login varchar2(25) NOT NULL,
+KON_Haslo varchar2(25) NOT NULL,
+KON_Data_zalozenia_konta date NOT NULL,
+KON_Typ_konta varchar2(10) NOT NULL,
+KON_Aktywne varchar2(3) default 'T',
+UZY_ID_Uzytkownika number(4) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table KONTA_BIBL
+add constraint CSR_PK_KON
+primary key (KON_ID_Konta);
+
+----------------------------------------;
+--               Unique Key;
+----------------------------------------;
+
+alter table KONTA_BIBL
+add constraint CSR_UQ_KON
+unique (KON_Login);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+--alter table KONTA_BIBL add constraint CSR_FK_UZY
+alter table KONTA_BIBL add constraint CSR_FK_UZY3
+foreign key (UZY_ID_Uzytkownika)
+references UZYTKOWNICY (UZY_ID_Uzytkownika);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_KONTA_BIBL;
+--
+create sequence SEQ_KONTA_BIBL  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_KONTA_BIBL
+before insert on KONTA_BIBL
+for each row
+begin
+if :new.KON_ID_Konta is NULL then
+SELECT SEQ_KONTA_BIBL.nextval INTO :new.KON_ID_Konta FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--CREATE TABLE WYDARZENIA;
+----------------------------------------;
+
+create table WYDARZENIA (
+WYD_ID_Wydarzenia number(4) NOT NULL,
+WYD_Nazwa varchar2(50) NOT NULL,
+WYD_Organizator varchar2(50) NOT NULL,
+WYD_Data date NOT NULL,
+WYD_godzina_rozpoczecia varchar2(5) NOT NULL,
+WYD_godzina_zakonczenia varchar2(5) NOT NULL,
+WYD_opis varchar2(250) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table WYDARZENIA
+add constraint CSR_PK_WYD
+primary key (WYD_ID_Wydarzenia);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_WYDARZENIA;
+--
+create sequence SEQ_WYDARZENIA  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_WYDARZENIA
+before insert on WYDARZENIA
+for each row
+begin
+if :new.WYD_ID_Wydarzenia is NULL then
+SELECT SEQ_WYDARZENIA.nextval INTO :new.WYD_ID_Wydarzenia FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--CREATE TABLE EEE_WYD_UZY;
+----------------------------------------;
+
+create table EEE_WYD_UZY (
+EEE_ID number(4) NOT NULL,
+WYD_ID_Wydarzenia number(4) NOT NULL,
+UZY_ID_Uzytkownika number(4) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table EEE_WYD_UZY
+add constraint CSR_PK_EEE
+primary key (EEE_ID);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+alter table EEE_WYD_UZY add constraint CSR_FK_UZY4
+foreign key (UZY_ID_Uzytkownika)
+references UZYTKOWNICY (UZY_ID_Uzytkownika);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+alter table EEE_WYD_UZY add constraint CSR_FK_WYD
+foreign key (WYD_ID_Wydarzenia)
+references WYDARZENIA (WYD_ID_Wydarzenia);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_EEE_WYD_UZY;
+--
+create sequence SEQ_EEE_WYD_UZY  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_EEE_WYD_UZY
+before insert on EEE_WYD_UZY
+for each row
+begin
+if :new.EEE_ID is NULL then
+SELECT SEQ_EEE_WYD_UZY.nextval INTO :new.EEE_ID FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--CREATE TABLE PRACOWNICY;
+----------------------------------------;
+
+create table PRACOWNICY (
+PRA_ID_Pracownika number(4) NOT NULL,
+PRA_Identyfikator number(10) NOT NULL,
+PRA_Pensja number(6,2) NOT NULL,
+PRA_Rodzaj_umowy varchar2(15) NOT NULL,
+UZY_ID_Uzytkownika number(4) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table PRACOWNICY
+add constraint CSR_PK_PRA
+primary key (PRA_ID_Pracownika);
+
+
+----------------------------------------;
+--               Unique Key;
+----------------------------------------;
+
+alter table PRACOWNICY
+add constraint CSR_UQ_PRA
+unique (PRA_Identyfikator);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+--alter table PRACOWNICY add constraint CSR_FK_UZY
+alter table PRACOWNICY add constraint CSR_FK_UZY5
+foreign key (UZY_ID_Uzytkownika)
+references UZYTKOWNICY (UZY_ID_Uzytkownika);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_PRACOWNICY;
+--
+create sequence SEQ_PRACOWNICY  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_PRACOWNICY
+before insert on PRACOWNICY
+for each row
+begin
+if :new.PRA_ID_Pracownika is NULL then
+SELECT SEQ_PRACOWNICY.nextval INTO :new.PRA_ID_Pracownika FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--CREATE TABLE SLOTY;
+----------------------------------------;
+
+create table SLOTY (
+SLO_ID_Sloty number(4) NOT NULL,
+SLO_Opis varchar2(15) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table SLOTY
+add constraint CSR_PK_SLO
+primary key (SLO_ID_Sloty);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_SLOTY;
+--
+create sequence SEQ_SLOTY  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_SLOTY
+before insert on SLOTY
+for each row
+begin
+if :new.SLO_ID_Sloty is NULL then
+SELECT SEQ_SLOTY.nextval INTO :new.SLO_ID_Sloty FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--CREATE TABLE GRAFIK;
+----------------------------------------;
+
+create table GRAFIK (
+GRA_ID_Grafik number(4) NOT NULL,
+GRA_Komentarz varchar2(100),
+PRA_ID_Pracownika number(4) NOT NULL,
+SLO_ID_Sloty number(4) NOT NULL
+);
+--TABLESPACE STUDENT_DATA;
+
+----------------------------------------;
+--              Primary Key;
+----------------------------------------;
+
+alter table GRAFIK
+add constraint CSR_PK_GRA
+primary key (GRA_ID_Grafik);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+alter table GRAFIK add constraint CSR_FK_PRA
+foreign key (PRA_ID_Pracownika)
+references PRACOWNICY (PRA_ID_Pracownika);
+
+----------------------------------------;
+--              Foreign Key;
+----------------------------------------;
+
+alter table GRAFIK add constraint CSR_FK_SLO
+foreign key (SLO_ID_Sloty)
+references SLOTY (SLO_ID_Sloty);
+
+----------------------------------------;
+--              SEQUENCE;
+----------------------------------------;
+
+drop sequence SEQ_GRAFIK;
+--
+create sequence SEQ_GRAFIK  increment by 1 start with 1
+maxvalue 9999999999 minvalue 1;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+
+create or replace trigger T_BI_GRAFIK
+before insert on GRAFIK
+for each row
+begin
+if :new.GRA_ID_Grafik is NULL then
+SELECT SEQ_GRAFIK.nextval INTO :new.GRA_ID_Grafik FROM dual;
+end if;
+end;
+/
+
+----------------------------------------;
+--              DESCRIBE;
+----------------------------------------;
+
+DESCRIBE AUTORZY;
+DESCRIBE KSIAZKI;
+DESCRIBE KKK_AUT_KSI;
+DESCRIBE EGZEMPLARZE;
+DESCRIBE UZYTKOWNICY
+DESCRIBE REZERWACJE;
+DESCRIBE WYPOZYCZENIA;
+DESCRIBE KARY;
+DESCRIBE HISTORIA_WYP;
+DESCRIBE WYDARZENIA;
+DESCRIBE KONTA_BIBL;
+DESCRIBE EEE_WYD_UZY;
+DESCRIBE PRACOWNICY;
+DESCRIBE SLOTY;
+DESCRIBE GRAFIK;
+
+--------------Koniec skryptu----------------------;
+
+----------------------------------------;
+--              INDEX;
+----------------------------------------;
+drop INDEX IX_KSI_TYTUL;
+drop INDEX IX_AUT_IMIE;
+drop INDEX IX_EGZ_ROK;
+drop INDEX IX_KON_AKTYWNE;
+
+CREATE INDEX IX_KSI_TYTUL
+    ON KSIAZKI (KSI_Tytul)
+    STORAGE (INITIAL 150k  NEXT 150k)
+    tablespace STUDENT_INDEX;
+
+CREATE INDEX IX_AUT_IMIE
+    ON AUTORZY (AUT_Imie)
+    STORAGE (INITIAL 150k  NEXT 150k)
+    tablespace STUDENT_INDEX;
+
+CREATE INDEX IX_EGZ_ROK
+    ON EGZEMPLARZE (EGZ_Rok_wydania)
+    STORAGE (INITIAL 150k  NEXT 150k)
+    tablespace STUDENT_INDEX;
+
+CREATE INDEX IX_KON_AKTYWNE
+    ON KONTA_BIBL (KON_Aktywne)
+    STORAGE (INITIAL 150k  NEXT 150k)
+    tablespace STUDENT_INDEX;
+
+EXPLAIN PLAN FOR
+SELECT KON_ID_Konta,KON_Aktywne FROM KONTA_BIBL;
+
+EXPLAIN PLAN FOR
+SELECT KSI_ID_Ksiazki,KSI_Tytul,KSI_Gatunek FROM KSIAZKI WHERE KSI_Tytul='Nowicjuszka';
+
+SELECT plan_table_output FROM
+TABLE(dbms_xplan.display('plan_table',null,'typical -cost -bytes'));
+
+----------------------------------------;
+--              PROCEDURA;
+----------------------------------------;
+
+CREATE or REPLACE PROCEDURE ksi_st1_insert(ile IN number)
+    IS  licznik number(2);
+        BEGIN  licznik := 1;
+            WHILE licznik < ile+1
+            LOOP
+                INSERT INTO KSIAZKI(KSI_Tytul, KSI_Gatunek)
+                VALUES ('KS'||licznik, 'Gatunek'||licznik);
+                licznik := licznik + 1;
+            END LOOP;
+        END;
+        /
+
+BEGIN ksi_st1_insert(10);
+END;
+/
+
+SELECT KSI_ID_Ksiazki, KSI_Tytul, KSI_Gatunek FROM KSIAZKI;
+
+
+CREATE or REPLACE PROCEDURE uzy_st1_insert(ile IN number)
+    IS  licznik number(2);
+        BEGIN  licznik := 1;
+            WHILE licznik < ile+1
+            LOOP
+                INSERT INTO UZYTKOWNICY(UZY_Nr_Karty, UZY_Imie, UZY_Drugie_Imie, UZY_Nazwisko, UZY_Adres,UZY_Data_ur ,UZY_Poczta, UZY_Aktywny)
+                VALUES (ROUND(DBMS_RANDOM.VALUE(10000,99999))||ROUND(DBMS_RANDOM.VALUE(10000,99999)), 'Imie'||licznik, 'Drugie_imie'||licznik, 'Nazwisko'||licznik,
+                        'Adres'||licznik,TO_DATE(TRUNC(DBMS_RANDOM.VALUE(TO_CHAR(DATE '1950-01-01','J'),TO_CHAR(DATE '2012-12-31','J'))),'J'),'Poczta'||licznik, 'T'||licznik);
+                licznik := licznik + 1;
+            END LOOP;
+        END;
+        /
+
+SELECT UZY_ID_Uzytkownika, UZY_Nr_Karty, UZY_Imie, UZY_Drugie_Imie, UZY_Nazwisko, UZY_Adres, UZY_Data_ur, UZY_Poczta, UZY_Aktywny  FROM UZYTKOWNICY;
+
+BEGIN  uzy_st1_insert(10);
+END;
+/
+
+CREATE or REPLACE PROCEDURE kon_st1_insert(ile IN number)
+    IS  licznik number(2);
+        BEGIN  licznik := 1;
+            WHILE licznik < ile+1
+            LOOP
+                INSERT INTO KONTA_BIBL(KON_Login, KON_Haslo, KON_Data_zalozenia_konta, KON_Typ_konta, UZY_ID_Uzytkownika)
+                VALUES ('Login'||licznik, 'Haslo'||licznik, '20190331', 'Uzytkownik', licznik);
+                licznik := licznik + 1;
+            END LOOP;
+        END;
+        /
+
+BEGIN  kon_st1_insert(10);
+END;
+/
+
+SELECT KON_ID_Konta, KON_Login, KON_Haslo, KON_Data_zalozenia_konta, KON_Typ_konta, KON_Aktywne, UZY_ID_Uzytkownika FROM KONTA_BIBL;
+
+--------------------------------------Koniec procedur------------------------------------------------;
+INSERT INTO UZYTKOWNICY(UZY_Nr_Karty, UZY_Imie, UZY_Drugie_Imie, UZY_Nazwisko, UZY_Adres, UZY_Data_ur, UZY_Poczta, UZY_Aktywny) VALUES(123457,'Marcin','Adam','Piotrkowski','ul. Kwiatkowa 4','19990312','Marcin01@interia.pl','tak');
+INSERT INTO UZYTKOWNICY(UZY_Nr_Karty, UZY_Imie, UZY_Nazwisko, UZY_Adres,UZY_Poczta,UZY_Aktywny) VALUES(976407,'Sebastian','Nowakowski','Ul. Osy 21','Seba@gmail.com','tak');
+
+INSERT INTO KSIAZKI(KSI_Tytul, KSI_Gatunek) VALUES('Tytul','naukowe');
+INSERT INTO KSIAZKI(KSI_Tytul, KSI_Gatunek) VALUES('Tytul1','fantastyka');
+INSERT INTO KSIAZKI(KSI_Tytul, KSI_Gatunek) VALUES('Sezon burz','fantastyka');
+INSERT INTO KSIAZKI(KSI_Tytul, KSI_Gatunek) VALUES('Gildia magow','fantastyka');
+INSERT INTO KSIAZKI(KSI_Tytul, KSI_Gatunek) VALUES('Nowicjuszka','fantastyka');
+INSERT INTO KSIAZKI(KSI_Tytul, KSI_Gatunek) VALUES('Wielki mistrz','fantastyka');
+INSERT INTO KSIAZKI(KSI_Tytul, KSI_Gatunek) VALUES('Podstawowy kurs systemów baz danych','fantastyka');
+
+INSERT INTO EGZEMPLARZE(EGZ_ID_Egzemplarza,EGZ_Rok_wydania, EGZ_Ilosc_stron, EGZ_Numer_wydania, EGZ_Oprawa, KSI_ID_Ksiazki) VALUES(1,2020, 1120, 4, 'Twarda', 2);
+INSERT INTO EGZEMPLARZE(EGZ_Oprawa, KSI_ID_Ksiazki) VALUES('Twarda', 2);
+
+INSERT INTO AUTORZY(AUT_Imie, AUT_Nazwisko) VALUES('Marek','Kowalski');
+INSERT INTO AUTORZY(AUT_Imie, AUT_Nazwisko) VALUES('Andrzej','Sapkowski');
+INSERT INTO AUTORZY(AUT_Imie, AUT_Nazwisko) VALUES('Trudi','Canavan');
+
+INSERT INTO KKK_AUT_KSI(AUT_ID_Autorzy, KSI_ID_Ksiazki) VALUES(1,2);
+INSERT INTO KKK_AUT_KSI(AUT_ID_Autorzy, KSI_ID_Ksiazki) VALUES(2,4);
+INSERT INTO KKK_AUT_KSI(AUT_ID_Autorzy, KSI_ID_Ksiazki) VALUES(2,5);
+INSERT INTO KKK_AUT_KSI(AUT_ID_Autorzy, KSI_ID_Ksiazki) VALUES(2,6);
+INSERT INTO KKK_AUT_KSI(AUT_ID_Autorzy, KSI_ID_Ksiazki) VALUES(3,3);
+
+INSERT INTO REZERWACJE(REZ_Data_rezerwacji, EGZ_ID_Egzemplarza, UZY_ID_Uzytkownika) VALUES('20190305',1,1);
+
+INSERT INTO PRACOWNICY(PRA_Identyfikator, PRA_Pensja, PRA_Rodzaj_umowy, UZY_ID_Uzytkownika) VALUES(999999,1500.00,'Umowa o prace',1);
+
+COMMIT;
+INSERT INTO KSIAZKI(KSI_Tytul, KSI_Gatunek) VALUES('Tytul6','Gatunek6');
+SAVEPOINT insert1;
+SELECT KSI_ID_Ksiazki, KSI_Tytul, KSI_Gatunek FROM KSIAZKI;
+SAVEPOINT insert2;
+ROLLBACK;
+ROLLBACK TO SAVEPOINT insert1
+ROLLBACK TO SAVEPOINT insert2;
+
+----------------------------------------;
+--              ZAPYTANIA;
+----------------------------------------;
+
+SELECT sysdate from dual;
+
+SELECT KSI_ID_Ksiazki, KSI_Tytul, KSI_Gatunek FROM KSIAZKI;
+SELECT EGZ_ID_Egzemplarza, EGZ_Rok_wydania, EGZ_Ilosc_stron, EGZ_Numer_wydania, EGZ_Oprawa, KSI_ID_Ksiazki FROM EGZEMPLARZE;
+SELECT UZY_ID_Uzytkownika, UZY_Nr_Karty, UZY_Imie, UZY_Drugie_Imie, UZY_Nazwisko, UZY_Adres, UZY_Data_ur, UZY_Poczta, UZY_Aktywny FROM UZYTKOWNICY;
+SELECT AUT_ID_Autorzy, AUT_Imie, AUT_Nazwisko FROM AUTORZY;
+SELECT KKK_ID, AUT_ID_Autorzy, KSI_ID_Ksiazki FROM KKK_AUT_KSI;
+SELECT REZ_ID_Rezerwacje, REZ_Data_rezerwacji, EGZ_ID_Egzemplarza, UZY_ID_Uzytkownika FROM REZERWACJE;
+
+SELECT max(KSI_ID_Ksiazki) FROM KSIAZKI;
+
+column KSI_Tytul HEADING 'Tytuł' FORMAT A10
+column KSI_Gatunek HEADING 'Gatunek' FORMAT A10
+column EGZ_Rok_wydania HEADING 'Rok wydania' FORMAT A10
+column EGZ_Ilosc_stron HEADING 'Ilosc stron' FORMAT A10
+column EGZ_Numer_wydania HEADING 'Numer wydania' FORMAT A10
+SELECT a.KSI_Tytul,a.KSI_Gatunek,b.EGZ_Rok_wydania,b.EGZ_Ilosc_stron,b.EGZ_Numer_wydania
+FROM KSIAZKI a,EGZEMPLARZE b
+WHERE a.KSI_ID_Ksiazki=b.KSI_ID_Ksiazki;
+
+column KSI_Tytul HEADING 'Tytuł' FORMAT A10
+column KSI_Gatunek HEADING 'Gatunek' FORMAT A10
+column AUT_Imie HEADING 'Imie autora' FORMAT A10
+column AUT_Nazwisko HEADING 'Nazwisko autora' FORMAT A10
+SELECT b.AUT_ID_Autorzy,b.AUT_Imie,b.AUT_Nazwisko
+FROM (
+    SELECT a.KSI_ID_Ksiazki,a.KSI_Tytul,a.KSI_Gatunek, AUT_ID_Autorzy
+    FROM KSIAZKI a, KKK_AUT_KSI c
+    WHERE a.KSI_ID_Ksiazki=c.KSI_ID_Ksiazki
+    ) d,  AUTORZY b
+WHERE b.AUT_ID_Autorzy=d.AUT_ID_Autorzy;
+
+column KSI_Tytul HEADING 'Tytuł' FORMAT A10
+column KSI_Gatunek HEADING 'Gatunek' FORMAT A10
+column AUT_Imie HEADING 'Imie autora' FORMAT A10
+column AUT_Nazwisko HEADING 'Nazwisko autora' FORMAT A10
+SELECT KSI_Tytul,KSI_Gatunek,AUT_Imie,AUT_Nazwisko
+FROM(
+    SELECT a.KSI_ID_Ksiazki,a.KSI_Tytul,a.KSI_Gatunek,b.AUT_ID_Autorzy,b.AUT_Imie,b.AUT_Nazwisko, c.KSI_ID_Ksiazki, c.AUT_ID_Autorzy
+    FROM KSIAZKI a, AUTORZY b, KKK_AUT_KSI c
+    WHERE c.KSI_ID_Ksiazki>c.AUT_ID_Autorzy);
+
+column REZ_Data_rezerwacji HEADING 'Data rezerwacji' FORMAT A10
+column KSI_Tytul HEADING 'Tytuł' FORMAT A10
+column KSI_Gatunek HEADING 'Gatunek' FORMAT A10
+column EGZ_Ilosc_stron HEADING 'Ilosc stron' FORMAT A10
+column EGZ_Oprawa HEADING 'Oprawa' FORMAT A10
+column UZY_Imie HEADING 'Imie uzytkownika' FORMAT A10
+column UZY_Nazwisko HEADING 'Nazwisko uzytkownika' FORMAT A10
+column UZY_Adres HEADING 'Adres uzytkownika' FORMAT A10
+SELECT r.REZ_Data_rezerwacji,k.KSI_Tytul,k.KSI_Gatunek,e.EGZ_Ilosc_stron,e.EGZ_Oprawa,
+       u.UZY_Imie,u.UZY_Nazwisko,u.UZY_Adres
+FROM REZERWACJE r, KSIAZKI k, EGZEMPLARZE e, UZYTKOWNICY u
+WHERE r.UZY_ID_Uzytkownika=u.UZY_ID_Uzytkownika AND r.EGZ_ID_Egzemplarza=e.EGZ_ID_Egzemplarza
+  AND e.KSI_ID_Ksiazki=e.KSI_ID_Ksiazki
+ORDER BY KSI_Tytul;
+
+column EGZ_Ilosc_stron HEADING 'Ilosc stron' FORMAT A10
+column EGZ_Oprawa HEADING 'Oprawa' FORMAT A10
+SELECT EGZ_Oprawa,AVG(EGZ_Ilosc_stron) FROM EGZEMPLARZE
+WHERE EGZ_Ilosc_stron>300
+HAVING AVG(EGZ_Ilosc_stron)>400
+GROUP BY EGZ_Oprawa;
+
+column KSI_Tytul HEADING 'Tytul' FORMAT A10
+column KSI_Gatunek HEADING 'Oprawa' FORMAT A10
+SELECT MAX(KSI_Tytul) FROM KSIAZKI
+WHERE KSI_ID_Ksiazki>4
+HAVING MAX(KSI_Tytul)<>'Tytul'
+GROUP BY KSI_Gatunek;
+
+column UZY_Imie HEADING 'Imie' FORMAT A10
+SELECT UZY_Imie, MIN(UZY_Nazwisko) FROM UZYTKOWNICY
+HAVING UZY_Imie NOT LIKE 'A%'
+GROUP BY UZY_Imie;
+
+SELECT KSI_Tytul
+FROM KSIAZKI,REZERWACJE,EGZEMPLARZE
+WHERE EGZ_Rok_wydania>EXTRACT(YEAR FROM REZ_Data_rezerwacji);
+
+column KSI_Tytul HEADING 'Tytul' FORMAT A10
+column UZY_ID_Uzytkownika HEADING 'Uzytkownika' FORMAT A10
+SELECT KSI_Tytul,UZY_ID_Uzytkownika
+FROM KSIAZKI k, UZYTKOWNICY u,EGZEMPLARZE e
+WHERE u.UZY_ID_Uzytkownika(+) BETWEEN k.KSI_ID_Ksiazki and e.EGZ_Ilosc_stron;
+
+column KSI_Tytul HEADING 'Tytul' FORMAT A10
+column UZY_ID_Uzytkownika HEADING 'Uzytkownika' FORMAT A10
+SELECT KSI_Tytul,UZY_ID_Uzytkownika
+FROM KSIAZKI k, UZYTKOWNICY u, EGZEMPLARZE e
+WHERE u.UZY_ID_Uzytkownika BETWEEN k.KSI_ID_Ksiazki(+) and e.EGZ_Ilosc_stron(+);
+
+column KSI_Tytul HEADING 'Tytul' FORMAT A10
+column EGZ_Ilosc_stron HEADING 'Uzytkownika' FORMAT A10
+column KSI_Tytul HEADING 'Tytul' FORMAT A10
+SELECT k.KSI_Tytul,e.EGZ_Ilosc_stron,e.EGZ_Oprawa
+FROM KSIAZKI k, EGZEMPLARZE e
+WHERE e.EGZ_Ilosc_stron<600
+UNION
+SELECT k.KSI_Tytul,e.EGZ_Ilosc_stron,e.EGZ_Oprawa
+FROM KSIAZKI k, EGZEMPLARZE e
+WHERE e.EGZ_Ilosc_stron>1000;
+
+SELECT c.CONSTRAINT_NAME, c.TABLE_NAME from all_constraints c, USER_TABLES t where c.TABLE_NAME=t.TABLE_NAME AND c.OWNER='ST12K_PIERZ_NATALIA' AND c.CONSTRAINT_NAME NOT LIKE 'SYS$%';
+
+
+--select * from user_constraints where CONSTRAINT_NAME = 'CSR_FK_EGZ'
+
+----------------------------------------;
+--              PERSPEKTYWY;
+----------------------------------------;
+
+CREATE OR REPLACE VIEW V_KONTA
+(ID_Konta,Login,Data_zalozenia,Typ_konta, Imie, Nazwisko, Numer_karty)
+AS
+SELECT c.KON_ID_Konta, c.KON_Login, c.KON_Data_zalozenia_konta, c.KON_Typ_konta, c.UZY_Imie, c.UZY_Nazwisko, c.UZY_Nr_Karty
+FROM(
+    SELECT a.UZY_ID_Uzytkownika, b.UZY_ID_Uzytkownika, a.KON_ID_Konta, a.KON_Login, a.KON_Data_zalozenia_konta,
+           a.KON_Typ_konta, b.UZY_Imie, b.UZY_Nazwisko, b.UZY_Nr_Karty
+    FROM KONTA_BIBL a, UZYTKOWNICY b
+    WHERE a.UZY_ID_Uzytkownika=b.UZY_ID_Uzytkownika
+    ) c
+WITH CHECK OPTION;
+
+COMMIT;
+
+----------------------------------------;
+--              TRIGGER;
+----------------------------------------;
+DROP TRIGGER T_VKONTA;
+
+CREATE OR REPLACE TRIGGER T_VKONTA
+    INSTEAD OF UPDATE
+    ON V_KONTA FOR EACH ROW
+    BEGIN
+        IF :OLD.Numer_karty <> :NEW.Numer_karty
+        THEN
+            UPDATE Numer_karty
+            SET Numer_karty=:OLD.Numer_karty
+            WHERE Numer_karty=:NEW.Numer_karty;
+        END IF;
+        IF :NEW.Numer_karty = :OLD.Numer_karty
+        THEN UPDATE Numer_karty
+             SET Numer_karty = :NEW.Numer_karty
+             WHERE Numer_karty = :NEW.Numer_karty;
+        END IF;
+    END;
+    /
+
+--ALTER SESSION SET current_schema =st12k_PIERZ_NATALIA ;
+
+----------------------------------------;
+--              PERSPEKTYWY;
+----------------------------------------;
+
+CREATE OR REPLACE VIEW V_KSIAZKI
+(ID, Imie_autora, Nazwisko_autora, Tytul, Gatunek, Rok_wydania)
+AS
+SELECT c.EGZ_ID_Egzemplarza, c.AUT_Imie, c.AUT_Nazwisko, c.KSI_Tytul, c.KSI_Gatunek, e.EGZ_Rok_wydania
+FROM(
+    SELECT a.AUT_ID_Autorzy, a.AUT_Imie, a.AUT_Nazwisko, k.KSI_ID_Ksiazki, k.KSI_Tytul, k.KSI_Gatunek, e.EGZ_ID_Egzemplarza,
+           e.EGZ_Rok_wydania, e.KSI_ID_Ksiazki,kkk.KSI_ID_Ksiazki, kkk.AUT_ID_Autorzy, kkk.KKK_ID
+    FROM AUTORZY a, EGZEMPLARZE e, KSIAZKI k, KKK_AUT_KSI kkk
+    WHERE a.AUT_ID_Autorzy=kkk.AUT_ID_Autorzy AND kkk.KSI_ID_Ksiazki=k.KSI_ID_Ksiazki
+    ) c, EGZEMPLARZE e
+WHERE c.EGZ_ID_Egzemplarza=e.EGZ_ID_Egzemplarza
+WITH CHECK OPTION;
+
+COMMIT;
+
+-------------------------koniec perspektyw------------------------------------
+SELECT * FROM V_KONTA;
+SELECT * FROM V_KSIAZKI;
+
+ALTER TABLE KONTA_BIBL DISABLE CONSTRAINT CSR_FK_UZY3;
+ALTER TABLE UZYTKOWNICY DISABLE CONSTRAINT CSR_UQ_UZY;
+
+ALTER TABLE KKK_AUT_KSI DISABLE CONSTRAINT CSR_FK_AUT;
+ALTER TABLE KKK_AUT_KSI DISABLE CONSTRAINT CSR_FK_KSI;
+ALTER TABLE EGZEMPLARZE DISABLE CONSTRAINT CSR_FK_KSI1;
+
+INSERT INTO V_KONTA(Login, Data_zalozenia, Typ_konta, Imie, Nazwisko) VALUES('Log1',20190331,'Uzytkownik','Imie','Nazwisko');
+UPDATE V_KONTA SET V_KONTA.Typ_konta='Admin' WHERE V_KONTA.Imie='Marcin' AND V_KONTA.Nazwisko='Piotrkowski';
+UPDATE V_KONTA SET V_KONTA.Numer_karty='0000000000' WHERE V_KONTA.Numer_karty='584545336';
+DELETE FROM V_KONTA WHERE V_KONTA.ID_Konta=10;
+
+INSERT INTO V_KSIAZKI(Imie_autora, Nazwisko_autora, Tytul, Gatunek, Rok_wydania) VALUES('Imaut','Nazwaut','Tytks','Gatks',1990);
+UPDATE V_KSIAZKI SET V_KSIAZKI.Rok_wydania=2019 WHERE V_KSIAZKI.Nazwisko_autora='Sapkowski';
+DELETE FROM V_KSIAZKI WHERE V_KSIAZKI.Nazwisko_autora='Canavan';
+
+
+
